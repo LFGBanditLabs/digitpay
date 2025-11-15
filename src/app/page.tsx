@@ -1,30 +1,17 @@
 'use client'
 
 import { useAccount } from 'wagmi'
-import { WalletConnect } from '@/components/WalletConnect'
+import { Navigation } from '@/components/Navigation'
 import { WalletInfo } from '@/components/WalletInfo'
 import { SendTransaction } from '@/components/SendTransaction'
+import { WalletConnect } from '@/components/WalletConnect'
 
 export default function Home() {
   const { isConnected } = useAccount()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                <span className="text-blue-600 dark:text-blue-400">Digit</span>pay
-              </h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <WalletConnect />
-            </div>
-          </div>
-        </div>
-      </header>
+      <Navigation />
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
