@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useAccount } from 'wagmi'
 import { Navigation } from '@/components/Navigation'
 import { WalletConnect } from '@/components/WalletConnect'
+import { Footer } from '@/components/Footer'
 
 export default function ConvertPage() {
   const { isConnected } = useAccount()
@@ -11,15 +12,42 @@ export default function ConvertPage() {
   const [toCurrency, setToCurrency] = useState('USD')
   const [amount, setAmount] = useState('')
   const [convertedAmount, setConvertedAmount] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const cryptoCurrencies = ['BTC', 'ETH', 'USDT', 'BNB', 'SOL']
   const fiatCurrencies = ['USD', 'EUR', 'NGN', 'GBP', 'JPY']
 
-  const handleConvert = () => {
-    // Mock conversion - replace with actual API call
-    const mockRate = 2500 // Example: 1 ETH = $2500
-    const converted = parseFloat(amount) * mockRate
-    setConvertedAmount(converted.toFixed(2))
+  const handleConvert = async () => {
+    if (!amount || parseFloat(amount) <= 0) {
+      setError('Please enter a valid amount')
+      return
+    }
+
+    setIsLoading(true)
+    setError('')
+    
+    // Simulate API call with delay
+    setTimeout(() => {
+      try {
+        // Mock conversion rates - replace with actual API call
+        const rates: Record<string, Record<string, number>> = {
+          ETH: { USD: 2500, EUR: 2300, NGN: 2000000, GBP: 2000, JPY: 350000 },
+          BTC: { USD: 45000, EUR: 41000, NGN: 36000000, GBP: 36000, JPY: 6300000 },
+          USDT: { USD: 1, EUR: 0.92, NGN: 800, GBP: 0.8, JPY: 140 },
+          BNB: { USD: 300, EUR: 275, NGN: 240000, GBP: 240, JPY: 42000 },
+          SOL: { USD: 100, EUR: 92, NGN: 80000, GBP: 80, JPY: 14000 },
+        }
+        
+        const rate = rates[fromCurrency]?.[toCurrency] || 1
+        const converted = parseFloat(amount) * rate
+        setConvertedAmount(converted.toFixed(2))
+      } catch (err) {
+        setError('Conversion failed. Please try again.')
+      } finally {
+        setIsLoading(false)
+      }
+    }, 1000)
   }
 
   return (
@@ -130,13 +158,30 @@ export default function ConvertPage() {
                   </div>
                 </div>
 
+                {/* Error Message */}
+                {error && (
+                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
+                    <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+                  </div>
+                )}
+
                 {/* Convert Button */}
                 <button
                   onClick={handleConvert}
-                  disabled={!amount || parseFloat(amount) <= 0}
-                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={!amount || parseFloat(amount) <= 0 || isLoading}
+                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                 >
-                  Convert Now
+                  {isLoading ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Converting...
+                    </>
+                  ) : (
+                    'Convert Now'
+                  )}
                 </button>
 
                 {/* Info Box */}
@@ -189,9 +234,11 @@ export default function ConvertPage() {
           </div>
         )}
       </main>
+      <Footer />
     </div>
   )
 }
+
 
 
 
