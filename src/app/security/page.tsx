@@ -1,6 +1,7 @@
 'use client'
 
 import { Navigation } from '@/components/Navigation'
+import { Footer } from '@/components/Footer'
 
 const securityFeatures = [
   {
@@ -202,6 +203,7 @@ export default function SecurityPage() {
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   )
 }

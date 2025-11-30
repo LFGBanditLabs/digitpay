@@ -1,6 +1,7 @@
 'use client'
 
 import { Navigation } from '@/components/Navigation'
+import { Footer } from '@/components/Footer'
 
 const features = [
   {
@@ -199,9 +200,11 @@ export default function FeaturesPage() {
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   )
 }
+
 
 
 

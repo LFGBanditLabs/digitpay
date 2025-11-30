@@ -1,6 +1,8 @@
 'use client'
 
+import { useState, useMemo } from 'react'
 import { Navigation } from '@/components/Navigation'
+import { Footer } from '@/components/Footer'
 
 const merchants = [
   {
@@ -54,6 +56,23 @@ const merchants = [
 ]
 
 export default function MerchantsPage() {
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('')
+
+  const filteredMerchants = useMemo(() => {
+    return merchants.filter((merchant) => {
+      const matchesSearch = merchant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           merchant.description.toLowerCase().includes(searchQuery.toLowerCase())
+      const matchesCategory = !selectedCategory || 
+                             merchant.category.toLowerCase().includes(selectedCategory.toLowerCase())
+      return matchesSearch && matchesCategory
+    })
+  }, [searchQuery, selectedCategory])
+
+  const categories = useMemo(() => {
+    return Array.from(new Set(merchants.map(m => m.category)))
+  }, [])
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <Navigation />
@@ -73,29 +92,59 @@ export default function MerchantsPage() {
         <div className="max-w-4xl mx-auto mb-12">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
             <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
+              <div className="flex-1 relative">
+                <svg
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
                 <input
                   type="text"
                   placeholder="Search merchants..."
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
-              <select className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
                 <option value="">All Categories</option>
-                <option value="electronics">Electronics</option>
-                <option value="fashion">Fashion & Apparel</option>
-                <option value="food">Food & Delivery</option>
-                <option value="travel">Travel & Tourism</option>
-                <option value="gaming">Gaming</option>
-                <option value="healthcare">Healthcare</option>
+                {categories.map((category) => (
+                  <option key={category} value={category.toLowerCase()}>
+                    {category}
+                  </option>
+                ))}
               </select>
             </div>
+            {(searchQuery || selectedCategory) && (
+              <div className="mt-4 flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    setSearchQuery('')
+                    setSelectedCategory('')
+                  }}
+                  className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  Clear filters
+                </button>
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  ({filteredMerchants.length} {filteredMerchants.length === 1 ? 'merchant' : 'merchants'})
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Merchants Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {merchants.map((merchant) => (
+        {filteredMerchants.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            {filteredMerchants.map((merchant) => (
             <div
               key={merchant.id}
               className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group cursor-pointer"
@@ -115,13 +164,40 @@ export default function MerchantsPage() {
                 </h3>
                 <p className="text-sm text-blue-600 dark:text-blue-400 font-medium mb-2">{merchant.category}</p>
                 <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">{merchant.description}</p>
-                <button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200">
+                <button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 transform hover:scale-105 active:scale-95 flex items-center justify-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
                   Pay with Crypto
                 </button>
               </div>
             </div>
           ))}
-        </div>
+          </div>
+        ) : (
+          <div className="text-center py-12 mb-12">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 max-w-md mx-auto">
+              <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                No merchants found
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                Try adjusting your search or filter criteria
+              </p>
+              <button
+                onClick={() => {
+                  setSearchQuery('')
+                  setSelectedCategory('')
+                }}
+                className="text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                Clear all filters
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* How It Works */}
         <div className="max-w-5xl mx-auto mb-12">
@@ -171,15 +247,20 @@ export default function MerchantsPage() {
               Accept cryptocurrency payments from customers worldwide. Join our network of merchants 
               and expand your business reach.
             </p>
-            <button className="bg-white text-blue-600 font-semibold py-3 px-8 rounded-xl hover:bg-gray-100 transition-colors shadow-lg">
+            <button className="bg-white text-blue-600 font-semibold py-3 px-8 rounded-xl hover:bg-gray-100 transition-all duration-200 shadow-lg transform hover:scale-105 active:scale-95 inline-flex items-center">
               Apply Now
+              <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
             </button>
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   )
 }
+
 
 
 
